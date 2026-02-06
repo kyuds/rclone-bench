@@ -11,6 +11,7 @@ from bench.dataset_read import NUM_FILES, SHARDS
 FILE_SIZE_BYTES = 4096  # 4KB
 FILES_PER_SHARD = NUM_FILES // SHARDS
 
+
 def generate_small_file_rcat(bucket_name, shard_index, file_index, data_buffer):
     """Generates a small 4KB file on S3 using rclone rcat."""
     filename = f"dataset/shard_{shard_index}/d_{file_index}.bin"
@@ -22,6 +23,7 @@ def generate_small_file_rcat(bucket_name, shard_index, file_index, data_buffer):
     
     subprocess.run(cmd, shell=True, check=True, capture_output=True)
     return filename
+
 
 def populate_dataset(bucket_name):
     """Generates 10,000 small files into the S3 bucket across multiple shards."""
@@ -52,6 +54,7 @@ def populate_dataset(bucket_name):
     print(f"\n✨ Dataset generation complete!")
     print(f"📊 Total Time: {total_duration:.2f}s")
     print(f"📊 Average Throughput: {NUM_FILES / total_duration:.2f} files/sec")
+
 
 if __name__ == "__main__":
     # Ensure this matches your confirmed bucket name
