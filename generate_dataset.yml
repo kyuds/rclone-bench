@@ -1,4 +1,4 @@
-# sky launch -c datagen --env BUCKET_NAME=<s3-bucket-name> -y generate_dataset.yml
+# sky launch -c datagen --env BUCKET_NAME=<s3-bucket-name> --env TMP_MOUNT_BUCKET=<s3-bucket-name> -y generate_dataset.yml
 num_nodes: 1
 
 workdir: .
