@@ -1,0 +1,21 @@
+# sky launch -c datagen --env BUCKET_NAME=<s3-bucket-name> -y generate_bulk_data.yml
+num_nodes: 1
+
+workdir: .
+
+resources:
+  infra: aws/us-east-1
+  instance_type: c7gn.16xlarge
+
+  autostop:
+    idle_minutes: 10
+    down: true
+
+envs:
+  BUCKET_NAME: none
+
+setup: |
+  pip install -e .
+
+run: |
+  python -m scripts.model_data_prefill --bucket $BUCKET_NAME

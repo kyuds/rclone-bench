@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rclone-bench"
+version = "0.1.0"
+description = "Benchmarking utilities for rclone"
+requires-python = ">=3.8"
+dependencies = [
+    "requests",
+]
+
+[tool.setuptools.packages.find]
+include = ["bench*", "scripts*"]
