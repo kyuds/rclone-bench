@@ -1,4 +1,4 @@
-# sky launch -c datagen --env BUCKET_NAME=<s3-bucket-name> -y generate_bulk_data.yml
+# sky launch -c datagen --env BUCKET_NAME=<s3-bucket-name> -y generate_model_weights.yml
 num_nodes: 1
 
 workdir: .
@@ -13,9 +13,17 @@ resources:
 
 envs:
   BUCKET_NAME: none
+  TMP_MOUNT_BUCKET: none
+
+# force rclone install
+file_mounts:
+  /my_data:
+    source: s3://$TMP_MOUNT_BUCKET
+    mode: MOUNT_CACHED
 
 setup: |
   pip install -e .
 
 run: |
+  echo "Starting Data Generation"
   python -m scripts.model_data_prefill --bucket $BUCKET_NAME

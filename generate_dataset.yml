@@ -1,0 +1,29 @@
+# sky launch -c datagen --env BUCKET_NAME=<s3-bucket-name> -y generate_dataset.yml
+num_nodes: 1
+
+workdir: .
+
+resources:
+  infra: aws/us-east-1
+  instance_type: c7gn.16xlarge
+
+  autostop:
+    idle_minutes: 10
+    down: true
+
+envs:
+  BUCKET_NAME: none
+  TMP_MOUNT_BUCKET: none
+
+# force rclone install
+file_mounts:
+  /my_data:
+    source: s3://$TMP_MOUNT_BUCKET
+    mode: MOUNT_CACHED
+
+setup: |
+  pip install -e .
+
+run: |
+  echo "Starting Data Generation"
+  python -m scripts.dataset_prefill --bucket $BUCKET_NAME

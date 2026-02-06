@@ -1,9 +1,16 @@
 import dataclasses
 import json
 import os
-import requests
 import subprocess
+import textwrap
 import uuid
+from pathlib import Path
+
+import requests
+
+
+RCLONE_CONFIG_DIR = Path.home() / ".config" / "rclone"
+RCLONE_CONFIG_PATH = RCLONE_CONFIG_DIR / "rclone.conf"
 
 
 @dataclasses.dataclass
@@ -52,6 +59,59 @@ class RCloneOptions:
             fast_list=get_bool("RCLONE_FAST_LIST", cls.fast_list),
         )
 
+
+def configure_rclone_s3(profile_name: str = "s3",
+                        region: str = "us-east-1",
+                        use_env_auth: bool = True) -> None:
+    """Configure rclone with an S3 remote profile.
+
+    This mimics how SkyPilot sets up rclone for MOUNT_CACHED mode.
+
+    Args:
+        profile_name: Name of the rclone profile (default: "s3")
+        region: AWS region (default: "us-east-1")
+        use_env_auth: If True, use AWS environment credentials (recommended).
+                      If False, reads from ~/.aws/credentials.
+    """
+    RCLONE_CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+
+    if use_env_auth:
+        # Use environment-based auth (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
+        # or IAM role credentials. This is SkyPilot's default approach.
+        config = textwrap.dedent(f"""\
+            [{profile_name}]
+            type = s3
+            provider = AWS
+            env_auth = true
+            region = {region}
+            acl = private
+            """)
+    else:
+        # Read credentials from boto3/AWS SDK
+        import boto3
+        session = boto3.Session()
+        credentials = session.get_credentials().get_frozen_credentials()
+        config = textwrap.dedent(f"""\
+            [{profile_name}]
+            type = s3
+            provider = AWS
+            access_key_id = {credentials.access_key}
+            secret_access_key = {credentials.secret_key}
+            region = {region}
+            acl = private
+            """)
+
+    # Check if profile already exists
+    if RCLONE_CONFIG_PATH.exists():
+        existing = RCLONE_CONFIG_PATH.read_text()
+        if f"[{profile_name}]" in existing:
+            print(f"rclone profile '{profile_name}' already exists, skipping.")
+            return
+
+    # Append config
+    with open(RCLONE_CONFIG_PATH, "a") as f:
+        f.write(config)
+    print(f"Configured rclone profile '{profile_name}' for S3 (region={region})")
 
 
 def get_rclone_stats():
